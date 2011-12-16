@@ -6,15 +6,14 @@
 
  The default samples provided with the gateway are only in Java,
  ASP and ColdFusion so this class was created to provide an
- implmentation in pure Python.
+ implementation in pure Python.
 
  @author Burhan Khalid <burhan.khalid@gmail.com>
- @version 1.0
- 
+
  This code is provided with no license restrictions.
  You may use it, derive from it, modify it at your own peril.
  The author is not responsible should the use of this code
- lead to strange anomilies in the time space continuum.
+ lead to strange anomalies in the time space continuum.
 
 
 """
@@ -22,12 +21,16 @@
 import cStringIO as StringIO
 import itertools
 import zipfile
-import httplib, urllib
-import logging
-import logging.handlers
-import datetime
+import httplib
+import urllib
+import string
 
 from xml.dom.minidom import parseString
+
+from exceptions import AliasNotFound
+from exceptions import GatewayError
+from exceptions import InvalidResponse
+
 
 class e24PaymentPipe():
     """
@@ -56,8 +59,8 @@ class e24PaymentPipe():
       gw = gateway(resource='somefile.cgn',alias='somealias')
       try:
         gw.parse()
-      except e:
-        print e
+      except (zipfile.BadZipfile,AliasNotFound):
+        pass
       
       now = datetime.datetime.now()
       trackid = "%d%d%d%d%d" % (now.year,now.month,now.day,now.hour,now.minute)
@@ -67,8 +70,8 @@ class e24PaymentPipe():
                            responseurl='http://www.google.com/',
                            trackid=trackid,
                            amount=2)
-      except e:
-        print e
+      except GatewayError:
+        pass
 
       print('Payment ID: %s' % r[0])
       print('Gateway URL: %s' % r[1])
@@ -77,20 +80,18 @@ class e24PaymentPipe():
     """
 
     def __init__(self, resource=None, alias=None):
-
         self._buffer = 2320 # Buffer for reading lines from the resource file
-        self._nodes = ('id','password','webaddress','port','context')
-        self._gw = {} # Stores the various elements to create the gateway
+        self._nodes = ('id', 'password', 'webaddress', 'port', 'context')
+        self._gw = dict() # Stores the various elements to create the gateway
         self._action = 1 # For payment
 
         self.resource_file = resource
         self.alias = alias
 
-    def _xor(self,  s=None):
-
+    def _xor(self, s=None):
         key = ""
         key = itertools.cycle(key)
-        return ''.join(chr(ord(x)^ord(y)) for (x,y) in itertools.izip(s,key))
+        return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in itertools.izip(s, key))
 
 
     def parse(self):
@@ -107,13 +108,13 @@ class e24PaymentPipe():
           ==========
 
              zipfile.BadZipfile - in case resource file cannot be read
-             "Alias %s not found in %s" - if alias terminal not found in
+             AliasNotFound - if alias terminal not found in
              resource file
 
         """
 
         out = StringIO.StringIO() # Temporary "file" to hold the zipped content
-        with open(self.resource_file,'rb') as f:
+        with open(self.resource_file, 'rb') as f:
             out.write(self._xor(f.read(self._buffer)))
 
         try:
@@ -121,20 +122,20 @@ class e24PaymentPipe():
         except zipfile.BadZipfile:
             raise zipfile.BadZipfile
 
-        if self.alias+".xml" in temp.namelist():
-            t = temp.open(self.alias+".xml")
+        if self.alias + ".xml" in temp.namelist():
+            t = temp.open(self.alias + ".xml")
             s = self._xor(''.join(f for f in t.read(self._buffer)))
         else:
-            raise Exception("Alias %s not found in %s."
-                    %(self.alias,self.resource_file))
+            raise Exception(AliasNotFound, "%s not found in %s."
+            % (self.alias, self.resource_file))
 
         d = parseString(s) # Populate the DOM from the XML file
 
         for node in self._nodes:
-            self._gw[node]=d.getElementsByTagName(node)[0].childNodes[0].nodeValue
+            self._gw[node] = d.getElementsByTagName(node)[0].childNodes[0].nodeValue
 
 
-    def connect(self,params={}):
+    def connect(self, params=dict()):
         """
 
           Performs the connection to the gateway to retrieve the
@@ -151,7 +152,7 @@ class e24PaymentPipe():
 
             httplib.HTTPException
             httplib.NotConnected
-            Invalid Response - invalid response recieved from the gateway
+            InvalidResponse - invalid response received from the gateway
 
           Returns
           =======
@@ -163,13 +164,13 @@ class e24PaymentPipe():
         params = urllib.urlencode(params)
 
         try:
-            if self._gw['port'] == httplib.HTTPS_PORT:
-                conn = httplib.HTTPSConnection(self._gw['webaddress'],httplib.HTTPS_PORT)
+            if int(self._gw['port']) == httplib.HTTPS_PORT:
+                conn = httplib.HTTPSConnection(self._gw['webaddress'], httplib.HTTPS_PORT)
             else:
-                conn = httplib.HTTPConnection(self._gw['webaddress'],httplib.HTTP_PORT)
+                conn = httplib.HTTPConnection(self._gw['webaddress'], httplib.HTTP_PORT)
         except httplib.HTTPException:
-            raise Exception(httplib.HTTPException,'Cannot open a connection to %s on port %s. Error was %s' %
-                    (self._gw['webaddress'],self._gw['port'],httplib.HTTPException))
+            raise Exception(httplib.HTTPException, 'Cannot open a connection to %s on port %s. Error was %s' %
+                                                   (self._gw['webaddress'], self._gw['port'], httplib.HTTPException))
 
         try:
             conn.connect()
@@ -177,30 +178,29 @@ class e24PaymentPipe():
             raise Exception(httplib.NotConnected)
 
         if self._gw['context'][-1] != '/':
-            context = self._gw['context']+'/'
+            context = self._gw['context'] + '/'
         else:
             context = self._gw['context']
 
-        context = '/'+context+'servlet/PaymentInitHTTPServlet'
-        headers = {"Content-type": "application/x-www-form-urlencoded","Accept": "text/plain"}
-        
+        context = '/' + context + 'servlet/PaymentInitHTTPServlet'
+        headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
+
         try:
-            conn.request("POST",context,params,headers)
+            conn.request("POST", context, params, headers)
         except httplib.HTTPException:
             raise httplib.HTTPException
 
         result = conn.getresponse()
         data = result.read()
-        
+
         try:
-            return data.split(':',1)
+            return data.split(':', 1)
         except KeyError:
-            raise Exception("Invalid Response")
+            raise Exception(InvalidResponse)
 
 
     def transaction(self, amount=1.000, lang='ENG', currency=414, udf={},
-            errorurl=None, responseurl=None, trackid=None):
-
+                    errorurl=None, responseurl=None, trackid=None):
         """
 
            Main method to initiate a transaction request for the gateway.
@@ -241,11 +241,28 @@ class e24PaymentPipe():
              In case of an error, an exception is thrown with the text of the
              error message.
 
+             Following characters are not allowed in UDF fields
+
+             Sym   Hex  Name
+             ===============
+             ~     x7E  TILDE
+             `     x60  LEFT SINGLE QUOTATION MARK, GRAVE ACCENT
+             !     x21  EXCLAMATION POINT (bang)
+             #     x23  NUMBER SIGN (pound sign)
+             $     x24  DOLLAR SIGN
+             %     x25  PERCENT SIGN
+             ^     x5E  CIRCUMFLEX ACCENT
+             |     x7C  VERTICAL LINE (pipe)
+             \     x5C  REVERSE SLANT (REVERSE SOLIDUS)(backslash, backslant)
+             :     x3A  COLON
+             '     x27  APOSTROPHE, RIGHT SINGLE QUOTATION MARK, ACUTE ACCENT (single quote)
+             "     x22  QUOTATION MARK, DIAERESIS
+             /     x2F  SLANT (SOLIDUS), (slash)
         """
 
         # Setup transaction parameters
-       
-        params = {}
+
+        params = dict()
         params['id'] = self._gw['id']
         params['password'] = self._gw['password']
         params['action'] = self._action
@@ -257,15 +274,20 @@ class e24PaymentPipe():
         params['responseURL'] = responseurl
         params['trackid'] = trackid
 
-        for k,v in udf:
-            params[k.lower()] = v
+        s = "~`!#$%^|\:'\"/"
+        trans = string.maketrans(s, ''.join(['-'] * len(s)))
+
+        for k in udf.keys():
+            params[k.lower()] = udf[k].translate(trans)
 
         try:
             r = self.connect(params)
         except KeyError:
             return False
-         
-        if r[0][1:6] == 'ERROR':
-            raise Exception(r[1])
-        
+        try:
+            if r[0][1:6] == 'ERROR':
+                raise Exception(GatewayError)
+        except KeyError:
+            raise Exception(GatewayError)
+
         return r
