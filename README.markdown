@@ -14,29 +14,37 @@ e24PaymentPipe Python Class
 
   The library has successfully been used in production.
 
+  *UPDATE - 2011-12-28*
+
+     A __*major*__ update and overhaul has been done, and a new
+     branch production has been created.
   
   Quick Start
   -----------
 
-  `
+  ```python
     from e24PaymentPipe import e24PaymentPipe as gw
-    g = gw(resource='somefile.cgn',alias='somealias)
+    g = gw('/some/path/to/somefile.cgn','somealias')
     try:
       g.parse()
-    except e:
-      print e
-    
+    except zipfile.BadZipfile:
+    except AliasNotFound:
+      pass
+
+    # Before you try a transaction,
+    # you have to set the error and response URLs
+
+    g.ERROR_URL = 'https://www.example.com/error.html'
+    g.RESPONSE_URL = 'https://www.example.com/response.jsp'
+
     trackid = 12343
     try:
-       r = g.transaction(errorurl='http://www.google.com/',
-                         responseurl='http://www.google.com/',
-			 trackid=trackid,
-			 amount=1)
+       r = g.transaction(trackid,amount)
     except e:
        print e
 
     print('Payment ID: %s' % r[0])
     print('Payment URL: %s' % r[1])
-  `
+  ```
 
-  For more details docs, see the inline documentation provided in the class
+  For more detailed docs, see the inline documentation provided in the class

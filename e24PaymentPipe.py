@@ -27,9 +27,13 @@ import string
 
 from xml.dom.minidom import parseString
 
-from exceptions import AliasNotFound
-from exceptions import GatewayError
-from exceptions import InvalidResponse
+class AliasNotFound(Exception): pass
+
+
+class GatewayError(Exception): pass
+
+
+class InvalidResponse(Exception): pass
 
 
 class e24PaymentPipe():
@@ -42,34 +46,31 @@ class e24PaymentPipe():
 
       The class provides the following methods and properties.
 
+      See the example implementation for a working example.
+
       Properties
       ==========
 
-      _buffer = Stores the internal buffer length used when reading resource
-      files
-      _nodes = list of nodes to be read from the XML file
-      _gw = a dictionary that is used to store properties of the gateway
-      _action = the default action of the gateway. Currently the only supported
-      action is to pay, which is 1
+      ERROR_URL = A fully qualified URL that will be used in case there is an error with the transaction
+      RESPONSE_URL = The redirect URL after a successful response
 
       Sample use:
-
+      from datetime import datetime
       from e24PaymentPipe import e24PaymentPipe as gateway
-      import datetime
-      gw = gateway(resource='somefile.cgn',alias='somealias')
+
+      gw = gateway('somefile.cgn','somealias')
       try:
         gw.parse()
       except (zipfile.BadZipfile,AliasNotFound):
         pass
-      
-      now = datetime.datetime.now()
-      trackid = "%d%d%d%d%d" % (now.year,now.month,now.day,now.hour,now.minute)
+
+      gw.ERROR_URL = 'https://www.example.com/error.html'
+      gw.RESPONSE_URL = 'https://www.example.com/return.jsp'
+
+      trackid = "{0.year}{0.month}{0.day}{0.hour}{0.minute}".format(datetime.now())
 
       try:
-        r = gw.transaction(errorurl='http://www.google.com/',
-                           responseurl='http://www.google.com/',
-                           trackid=trackid,
-                           amount=2)
+        r = gw.transaction(trackid,amount=2.000)
       except GatewayError:
         pass
 
@@ -79,17 +80,23 @@ class e24PaymentPipe():
 
     """
 
-    def __init__(self, resource=None, alias=None):
+    ERROR_URL = None
+    RESPONSE_URL = None
+    ALIAS = None
+    RESOURCE = None
+
+    def __init__(self, resource, alias):
         self._buffer = 2320 # Buffer for reading lines from the resource file
         self._nodes = ('id', 'password', 'webaddress', 'port', 'context')
         self._gw = dict() # Stores the various elements to create the gateway
         self._action = 1 # For payment
 
-        self.resource_file = resource
-        self.alias = alias
+        self.RESOURCE = resource
+        self.ALIAS = alias
 
-    def _xor(self, s=None):
-        key = ""
+    def _xor(self, s):
+        key = "Those who profess to favour freedom and yet depreciate agitation are men who want rain "
+        key += "without thunder and lightning"
         key = itertools.cycle(key)
         return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in itertools.izip(s, key))
 
@@ -114,7 +121,7 @@ class e24PaymentPipe():
         """
 
         out = StringIO.StringIO() # Temporary "file" to hold the zipped content
-        with open(self.resource_file, 'rb') as f:
+        with open(self.RESOURCE, 'rb') as f:
             out.write(self._xor(f.read(self._buffer)))
 
         try:
@@ -122,12 +129,12 @@ class e24PaymentPipe():
         except zipfile.BadZipfile:
             raise zipfile.BadZipfile
 
-        if self.alias + ".xml" in temp.namelist():
-            t = temp.open(self.alias + ".xml")
+        if self.ALIAS + ".xml" in temp.namelist():
+            t = temp.open(self.ALIAS + ".xml")
             s = self._xor(''.join(f for f in t.read(self._buffer)))
         else:
             raise Exception(AliasNotFound, "%s not found in %s."
-            % (self.alias, self.resource_file))
+            % (self.ALIAS, self.RESOURCE))
 
         d = parseString(s) # Populate the DOM from the XML file
 
@@ -135,7 +142,7 @@ class e24PaymentPipe():
             self._gw[node] = d.getElementsByTagName(node)[0].childNodes[0].nodeValue
 
 
-    def connect(self, params=dict()):
+    def connect(self, params):
         """
 
           Performs the connection to the gateway to retrieve the
@@ -145,7 +152,7 @@ class e24PaymentPipe():
           ==========
 
             params - a dictionary of various parameters required to submit to
-            the payment gateway for a successfull request.
+            the payment gateway for a successful request.
 
           Exceptions
           ==========
@@ -199,8 +206,7 @@ class e24PaymentPipe():
             raise Exception(InvalidResponse)
 
 
-    def transaction(self, amount=1.000, lang='ENG', currency=414, udf={},
-                    errorurl=None, responseurl=None, trackid=None):
+    def transaction(self, trackid, udf=None, amount=1.000, lang='ENG', currency=414, filter=True):
         """
 
            Main method to initiate a transaction request for the gateway.
@@ -214,6 +220,8 @@ class e24PaymentPipe():
 
              currency - ISO currency code, defaults to 414 for Kuwaiti Dinars
 
+             filter - Switch to filter UDF fields. Defaults to True
+
              udf - a dictionary object containing UDF fields for the
              transaction. See your gateway documentation on UDF fields. Format
              is:
@@ -221,14 +229,9 @@ class e24PaymentPipe():
                 udf['udf1'] = 'some text'
                 udf['udf2'] = 'some text
 
-             errorurl = a fully qualified URL to the error page on the
-             merchant's server.
-             
-             responseurl = a fully qualified URL of the response page on
-             merchant's server.
-
              trackid = a unique tracking id. Can be in any format, but must be
-             unique for each transaction request.
+             unique for each transaction request; and must not contain any characters
+             listed in the table "characters not allowed".
 
              Returns
              =======
@@ -241,7 +244,10 @@ class e24PaymentPipe():
              In case of an error, an exception is thrown with the text of the
              error message.
 
-             Following characters are not allowed in UDF fields
+             Following characters are not allowed in UDF fields or trackid.
+             For UDF fields, the code will do a simple substitution with "-",
+             if you don't want this done, because you have already
+             taken care of this, call the method with 'filter=False'
 
              Sym   Hex  Name
              ===============
@@ -260,7 +266,11 @@ class e24PaymentPipe():
              /     x2F  SLANT (SOLIDUS), (slash)
         """
 
-        # Setup transaction parameters
+        if self.ERROR_URL is None:
+            raise AttributeError('ERROR_URL not set.')
+
+        if self.RESPONSE_URL is None:
+            raise AttributeError('RESPONSE_URL not set.')
 
         params = dict()
         params['id'] = self._gw['id']
@@ -270,15 +280,20 @@ class e24PaymentPipe():
         params['amt'] = amount
         params['currencycode'] = currency
         params['langid'] = lang
-        params['errorURL'] = errorurl
-        params['responseURL'] = responseurl
+        params['errorURL'] = self.ERROR_URL
+        params['responseURL'] = self.RESPONSE_URL
         params['trackid'] = trackid
 
-        s = "~`!#$%^|\:'\"/"
-        trans = string.maketrans(s, ''.join(['-'] * len(s)))
-
-        for k in udf.keys():
-            params[k.lower()] = udf[k].translate(trans)
+        if udf is not None:
+            keys = udf.keys()
+            if filter:
+                s = "~`!#$%^|\:'\"/"
+                trans = string.maketrans(s, ''.join(['-'] * len(s)))
+                for k in keys:
+                    params[k.lower()] = udf[k].translate(trans)
+            else:
+                for k in keys:
+                    params[k.lower()] = udf[k]
 
         try:
             r = self.connect(params)
