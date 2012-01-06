@@ -28,11 +28,7 @@ import string
 from xml.dom.minidom import parseString
 
 class AliasNotFound(Exception): pass
-
-
 class GatewayError(Exception): pass
-
-
 class InvalidResponse(Exception): pass
 
 
