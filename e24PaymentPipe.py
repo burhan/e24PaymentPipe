@@ -13,6 +13,8 @@
  You may use it, derive from it, modify it at your own peril.
  The author is not responsible should the use of this code
  lead to strange anomalies in the time space continuum.
+ 
+ 
 """
 
 import cStringIO as StringIO
@@ -241,6 +243,8 @@ class e24PaymentPipe():
              For UDF fields, the code will do a simple substitution with "-",
              if you don't want this done, because you have already
              taken care of this, call the method with 'filter=False'
+             
+             The table
 
              Sym   Hex  Name
              ===============
