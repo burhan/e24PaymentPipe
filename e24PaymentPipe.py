@@ -77,6 +77,9 @@ class e24PaymentPipe():
       print('Gateway URL: %s' % r[1])
 
 
+
+
+
     """
 
     ERROR_URL = None
