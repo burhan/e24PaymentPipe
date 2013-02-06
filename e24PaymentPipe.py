@@ -1,6 +1,5 @@
 # encoding: UTF-8
 """
- 
  This is a pure python implementation of the e24PaymentPipe class
  usually provided with ACI payment gateway modules.
 
@@ -14,8 +13,6 @@
  You may use it, derive from it, modify it at your own peril.
  The author is not responsible should the use of this code
  lead to strange anomalies in the time space continuum.
-
-
 """
 
 import cStringIO as StringIO
