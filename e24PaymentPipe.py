@@ -296,7 +296,7 @@ class e24PaymentPipe():
         except KeyError:
             return False
         try:
-            if r[0][1:6] == 'ERROR':
+            if r[0][1:6] == 'ERROR ERROR':
                 raise Exception(GatewayError)
         except KeyError:
             raise Exception(GatewayError)
