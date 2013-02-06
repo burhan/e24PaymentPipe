@@ -14,6 +14,9 @@
  You may use it, derive from it, modify it at your own peril.
  The author is not responsible should the use of this code
  lead to strange anomalies in the time space continuum.
+ 
+ 
+ 
 
 
 """
@@ -72,6 +75,9 @@ class e24PaymentPipe():
 
       print('Payment ID: %s' % r[0])
       print('Gateway URL: %s' % r[1])
+
+
+
 
 
     """
