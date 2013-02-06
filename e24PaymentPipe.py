@@ -35,6 +35,8 @@ class InvalidResponse(Exception): pass
 class e24PaymentPipe():
     """
 
+      can I write Java code here?!
+
       This is the main class that defines the payment pipe. For historical
       reasons, the name of this class matches that of the Java class.
 
