@@ -1,0 +1,28 @@
+.. :changelog:
+
+History
+-------
+
+0.1.0 (2011-02-12)
+++++++++++++++++++
+
+* First release on Github.
+
+0.1.1 (2011-02-14)
+++++++++++++++++++
+
+* Added custom exceptions
+
+0.1.2 (2011-12-16)
+++++++++++++++++++
+
+* Optimized error checking
+* Added character filters for UDF as per latest payment provider update
+
+0.2.0 (2011-12-28)
+++++++++++++++++++
+
+* Version branch created with major changes in the codebase
+* Cleaned up the API and interface
+
+
