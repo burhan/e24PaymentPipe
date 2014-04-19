@@ -20,7 +20,7 @@ Main Methods / Public Interface
                         payment processor
    :param str alias: The alias for the terminal. See your payment processor for more
                      information
-   :param int currency: The ISO 4217 numeric code for the currenty of the transaction.
+   :param int currency: The ISO 4217 numeric code for the currency of the transaction.
                         See `ISO 4217 <http://en.wikipedia.org/wiki/ISO_4217>`_ for more.
    :param str lang: The language supported by the gateway. See your payment processor's
                     documentation for the languages supported. Defaults to 'ENG' for US English.
