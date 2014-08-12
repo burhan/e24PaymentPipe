@@ -3,6 +3,13 @@
 History
 -------
 
+1.1 (2014-08-12)
+++++++++++++++++
+
+* Refactored class methods to `utils.py`
+* PEP-8 cleanup
+* Version bump
+
 0.1.0 (2011-02-12)
 ++++++++++++++++++
 
