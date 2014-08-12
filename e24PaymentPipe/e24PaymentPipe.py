@@ -161,7 +161,7 @@ class Gateway(object):
         result = data.split(':', 2)
         info = dict()
         info['paymentID'] = result[0] or None
-        info['paymentURL'] = result[1] + result[2] or None
+        info['paymentURL'] = '{}:{}'.format(result[1], result[2]) or None
 
         return info
 
