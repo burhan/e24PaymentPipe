@@ -158,7 +158,6 @@ class Gateway(object):
         if ':' not in data:
             raise Exception('Invalid data returned: {}'.format(data))
 
-        print(data)
         result = data.split(':', 2)
         info = dict()
         info['paymentID'] = result[0] or None
