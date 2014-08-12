@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import with_statement, print_function
+from __future__ import with_statement, print_function, absolute_import
 
-import itertools
 import zipfile
 import os
 import httplib
@@ -11,6 +10,8 @@ import datetime
 
 import xml.etree.cElementTree as et
 import cStringIO as StringIO
+
+from .utils import sanitize, xor
 
 
 class Gateway(object):
@@ -36,38 +37,24 @@ class Gateway(object):
 
     """
 
-    FILTER_CHARS = ['~','`','!','#','$','%','^','|','\\',':',"'",'"','/']
-
     def __init__(self, resource_file, alias, currency=414, lang='ENG'):
         self.resource_file = resource_file
-        self.alias = alias+".xml"
+        self.alias = alias + ".xml"
         self.node_titles = (('id', ''), ('password', ''), ('webaddress', ''), ('port', 443), ('context', ''),
                             ('passwordhash', ''), )
         self.gw = dict(self.node_titles)
-        
+
         self._udf = {}
         self._amount = 1.0
         self._currency = currency
-    
+
         self._action = 1  # 1 = Pay, other actions (such as refunds)
-                          # not yet implemented
+        # not yet implemented
 
         self._response_url = None
         self._error_url = None
         self._trackid = None
         self._lang = lang
-
-    @staticmethod
-    def sanitize(s):
-        """Filter out characters not allowed in the tracking id or the UDF values"""
-        return s.translate(None, ''.join(FILTER_CHARS))
-
-    @staticmethod
-    def _xor(cryptext=None):
-        key = "Those who profess to favour freedom and yet depreciate agitation are men who want rain without thunder "
-        key += "and lightning"
-        key = itertools.cycle(key)
-        return ''.join(chr(ord(x) ^ ord(y)) for x, y in itertools.izip(cryptext, key))
 
     @property
     def udf(self):
@@ -81,12 +68,12 @@ class Gateway(object):
                 raise ValueError('Only 5 user defined fields (UDF) are allowed')
             if not all(x[:3].upper() == 'UDF' and 0 < int(x[-1]) <= 5 for x in value.keys()):
                 raise ValueError('Dictionary keys must be in the form of UDF1 through UDF5')
-            self._udf.update({k.upper():sanitize(v) for k,v in value.iteritems()})
+            self._udf.update({k.upper(): sanitize(v) for k, v in value.iteritems()})
         except AttributeError:
             # Passed value does not have a keys() method,
             # assume its not a dictionary
-            self._udf.update({'UDF{}'.format(k+1):sanitize(v) for k,v in enumerate(value)})
-        
+            self._udf.update({'UDF{}'.format(k + 1): sanitize(v) for k, v in enumerate(value)})
+
     @property
     def error_url(self):
         return self._error_url
@@ -127,7 +114,7 @@ class Gateway(object):
         out = StringIO.StringIO()
 
         with open(self.resource_file, 'r') as f:
-            out.write(self._xor(''.join(chr(ord(x)) for x in f.read())))
+            out.write(xor(''.join(chr(ord(x)) for x in f.read())))
 
         try:
             temp = zipfile.ZipFile(out)
@@ -135,10 +122,10 @@ class Gateway(object):
             raise zipfile.BadZipfile
 
         if self.alias in temp.namelist():
-            gw_info = self._xor(''.join(f for f in temp.read(self.alias)))
+            gw_info = xor(''.join(f for f in temp.read(self.alias)))
         else:
             raise ValueError('Invalid alias {0} for resource file {1}'.format(self.alias,
-                                                                             os.path.basename(self.resource_file)))
+                                                                              os.path.basename(self.resource_file)))
         for node in et.fromstring(gw_info):
             if node.tag in self.gw:
                 self.gw[node.tag] = node.text or ''
@@ -154,7 +141,7 @@ class Gateway(object):
 
         conn.connect()
 
-        context = self.gw['context'] if self.gw['context'][-1] == '/' else self.gw['context']+'/'
+        context = self.gw['context'] if self.gw['context'][-1] == '/' else self.gw['context'] + '/'
 
         if transaction_type == 1:
             # Initialize a transaction
@@ -176,7 +163,7 @@ class Gateway(object):
         result = data.split(':', 2)
         info = dict()
         info['paymentID'] = result[0] or None
-        info['paymentURL'] = result[1]+result[2] or None
+        info['paymentURL'] = result[1] + result[2] or None
 
         return info
 
