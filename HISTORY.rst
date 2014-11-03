@@ -3,6 +3,13 @@
 History
 -------
 
+1.1.2 (2014-11-03)
+++++++++++++++++++
+
+* Fixed issue iterating over UDF dictionary keys
+* Fixed issue where unicode was being passed to sanitize
+  unicode strings are not allowed in UDF fields
+
 1.1 (2014-08-12)
 ++++++++++++++++
 

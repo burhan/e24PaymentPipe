@@ -67,11 +67,11 @@ class Gateway(object):
                 raise ValueError('Only 5 user defined fields (UDF) are allowed')
             if not all(x[:3].upper() == 'UDF' and 0 < int(x[-1]) <= 5 for x in value.keys()):
                 raise ValueError('Dictionary keys must be in the form of UDF1 through UDF5')
-            self._udf.update({k.upper(): sanitize(v) for k, v in value.iteritems()})
+            self._udf.update({k.upper(): sanitize(str(v)) for k, v in value.items()})
         except AttributeError:
             # Passed value does not have a keys() method,
             # assume its not a dictionary
-            self._udf.update({'UDF{}'.format(k + 1): sanitize(v) for k, v in enumerate(value)})
+            self._udf.update({'UDF{}'.format(k + 1): sanitize(str(v)) for k, v in enumerate(value)})
 
     @property
     def error_url(self):
