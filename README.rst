@@ -28,7 +28,6 @@ Features
 * Supports both newer and legacy terminal resource (.cgn) file formats
 * Reasonably well documented
 * Proven code - running in production since 2011
-* No external dependencies
 * Compatible with Python 3.4, Python 2.7
 
 Todo
