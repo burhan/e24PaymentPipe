@@ -4,7 +4,7 @@ e24PaymentPipe
 
 .. image:: https://badge.fury.io/py/e24PaymentPipe.png
     :target: http://badge.fury.io/py/e24PaymentPipe
-    
+
 .. image:: https://travis-ci.org/burhan/e24PaymentPipe.png?branch=master
         :target: https://travis-ci.org/burhan/e24PaymentPipe
 
@@ -29,10 +29,10 @@ Features
 * Reasonably well documented
 * Proven code - running in production since 2011
 * No external dependencies
+* Compatible with Python 3.4, Python 2.7
 
 Todo
 ----
 
 * Add support for credit card payments, including refunds.
 * Create comprehensive test suite
-* Add support for Python 3 **Under Development**

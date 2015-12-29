@@ -31,6 +31,7 @@ setup(
     package_dir={'e24PaymentPipe': 'e24PaymentPipe'},
     include_package_data=True,
     install_requires=[
+        'requests',
     ],
     license="BSD",
     zip_safe=False,
@@ -42,6 +43,7 @@ setup(
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7'
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.4'
     ],
 )

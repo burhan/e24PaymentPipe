@@ -17,8 +17,8 @@ def xor(cryptext=None):
     """
     key = "Those who profess to favour freedom and yet depreciate agitation are men who want rain without thunder "
     key += "and lightning"
-    key = itertools.cycle(key)
-    return ''.join(chr(ord(x) ^ ord(y)) for x, y in itertools.izip(cryptext, key))
+    key = itertools.cycle(bytearray(key, 'utf-8'))
+    return bytearray([a ^ b for a, b in zip(cryptext, key)])
 
 
 def sanitize(s):
