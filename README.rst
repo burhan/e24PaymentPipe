@@ -8,8 +8,8 @@ e24PaymentPipe
 .. image:: https://travis-ci.org/burhan/e24PaymentPipe.png?branch=master
         :target: https://travis-ci.org/burhan/e24PaymentPipe
 
-.. image:: https://pypip.in/d/e24PaymentPipe/badge.png
-        :target: https://crate.io/packages/e24PaymentPipe?version=1.0
+.. image:: https://img.shields.io/pypi/pyversions/e24PaymentPipe.svg
+
 
 
 This package provides a Python implementation for ACI's e24PaymentPipe Merchant Gateway
