@@ -19,7 +19,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 setup(
     name='e24PaymentPipe',
-    version='1.1.2',
+    version='1.2.0',
     description="This package provides a Python implementation for ACI's e24PaymentPipe Merchant Gateway",
     long_description=readme + '\n\n' + history,
     author='Burhan Khalid',
