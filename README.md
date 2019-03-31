@@ -3,7 +3,7 @@ e24PaymentPipe
 
 > **Notice of Incompatibility** (2019-March)
 >
-> `KNET`, the payment network in Kuwait has upgraded their paymenent gateway provider. This kit does not work with the new terminal configuration; an updated kit is under development and you can follow the progress [here](https://github.com/burhan/ipay).
+> `KNET`, the payment network in Kuwait has upgraded their paymenent gateway provider. This kit does not work with the new terminal configuration; an updated kit is under development and you can follow the progress [here](https://github.com/burhan/pyipay).
 
 
 ![image](https://badge.fury.io/py/e24PaymentPipe.png%0A%20:target:%20http://badge.fury.io/py/e24PaymentPipe)
