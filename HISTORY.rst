@@ -3,6 +3,12 @@
 History
 -------
 
+1.2.2 (2018-03-31)
+++++++++++++++++++
+* Dropping support for Python 2.6
+* Notice of incompatibility with new iPay module
+* Changed readme format to markdown
+
 1.2.1 (2018-03-04)
 ++++++++++++++++++
 * Added HoundCI
