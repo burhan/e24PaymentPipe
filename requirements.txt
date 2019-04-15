@@ -1,5 +1,5 @@
 wheel==0.33.1
-sphinxcontrib-blockdiag
+sphinxcontrib-blockdiag==1.5.5
 sphinx
 mock
 requests
