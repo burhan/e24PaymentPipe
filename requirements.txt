@@ -2,4 +2,4 @@ wheel==0.33.1
 sphinxcontrib-blockdiag==1.5.5
 sphinx==2.0.1
 mock==2.0.0
-requests==2.21.0
+requests==2.28.1
