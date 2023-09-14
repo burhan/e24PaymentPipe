@@ -1,6 +1,6 @@
 wheel==0.40.0
 sphinxcontrib-blockdiag==1.5.5
-sphinx==7.0.1
+sphinx==7.2.6
 mock==2.0.0
 setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
 requests==2.31.0
