@@ -1,4 +1,4 @@
-wheel==0.45.1
+wheel==0.46.2
 sphinxcontrib-blockdiag==1.5.5
 sphinx==7.0.1
 mock==2.0.0
